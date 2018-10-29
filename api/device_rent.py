@@ -1,7 +1,7 @@
 from common.views import login_required_api
 from flask import request
 from common import const, utils
-from common.response import reply
+from common.response import *
 from models import *
 from pydash import pick
 from api.form import parsing_form
@@ -13,28 +13,28 @@ import logging
 def rent_device():
     valid, form = parsing_form('rentDeviceForm')
     if not valid:
-        return reply(success=False, message='参数错误', error_code=const.param_err)
+        return reply(success=False, message='参数错误', error_code=const.PARAM_ERR)
     res_device = utils.is_code_exist(Device, form['device_code'])
     if not res_device[0]:
-        return reply(success=False, message='该设备不存在', error_code=const.param_illegal)
+        return reply(success=False, message='该设备不存在', error_code=const.PARAM_ILLEGAL)
     device = res_device[1].first()
-    if device.status != const.Returned:
-        return reply(success=False, message='该设备已被借出', error_code=const.param_illegal)
+    if device.status != const.DEVICE_RETURNED:
+        return reply(success=False, message='该设备已被借出', error_code=const.PARAM_ILLEGAL)
 
     res_member = utils.is_code_exist(Member, form['borrower_member_code'])
     if not res_member[0]:
-        return reply(success=False, message='该成员不存在', error_code=const.param_illegal)
+        return reply(success=False, message='该成员不存在', error_code=const.PARAM_ILLEGAL)
     member = res_member[1].first()
     update_info = {
-        'status': const.Rented,
+        'status': const.DEVICE_RENTED,
     }
     if not utils.update_by_data(res_device[1], update_info, False)[0]:
-        return reply(success=False, message='设备状态修改失败', error_code=const.unknown_err)
+        return reply(success=False, message='设备状态修改失败', error_code=const.UNKNOWN_ERR)
 
     device_rent_data = {
         'device_code': form['device_code'],
         'device_department_id': device.department_id,
-        'status': const.Rented,
+        'status': const.DEVICE_RENTED,
         'borrower_member_code': form['borrower_member_code'],
         'borrower_department_id': member.department_id,
         'borrow_date': form['borrow_date'],
@@ -45,7 +45,7 @@ def rent_device():
         'returner_department_id': 0,
         'real_return_date': form['expect_return_date'],
         'return_remark': '',
-        'record_status': const.Normal,
+        'record_status': const.RECORD_NORMAL,
     }
     res = utils.add_by_data(DeviceRent, device_rent_data)
     return reply(success=res[0], message=res[1], error_code=res[2])
@@ -56,38 +56,38 @@ def rent_device():
 def return_device():
     valid, form = parsing_form('returnDeviceForm')
     if not valid:
-        return reply(success=False, message='参数错误', error_code=const.param_err)
+        return reply(success=False, message='参数错误', error_code=const.PARAM_ERR)
 
     res_device = utils.is_code_exist(Device, form['device_code'])
     if not res_device[0]:
-        return reply(success=False, message='该设备不存在', error_code=const.param_illegal)
+        return reply(success=False, message='该设备不存在', error_code=const.PARAM_ILLEGAL)
     device = res_device[1].first()
-    if device.status != const.Rented:
-        return reply(success=False, message='该设备未被借出', error_code=const.param_illegal)
+    if device.status != const.DEVICE_RENTED:
+        return reply(success=False, message='该设备未被借出', error_code=const.PARAM_ILLEGAL)
 
     device_rented = DeviceRent.query.filter_by(
         device_code=form['device_code'],
-        status=const.Rented,
-        record_status=const.Normal
+        status=const.DEVICE_RENTED,
+        record_status=const.RECORD_NORMAL
     )
     cnt = device_rented.count()
     if cnt < 1:
-        return reply(success=False, message='无此设备正在外借记录', error_code=const.unknown_err)
+        return reply(success=False, message='无此设备正在外借记录', error_code=const.UNKNOWN_ERR)
     if cnt > 1:
-        return reply(success=False, message='内部数据错误，请联系管理员', error_code=const.unknown_err)
+        return reply(success=False, message='内部数据错误，请联系管理员', error_code=const.UNKNOWN_ERR)
 
     res_member = utils.is_code_exist(Member, form['returner_member_code'])
     if not res_member[0]:
-        return reply(success=False, message='该归还成员不存在', error_code=const.param_illegal)
+        return reply(success=False, message='该归还成员不存在', error_code=const.PARAM_ILLEGAL)
     member = res_member[1].first()
     update_info = {
-        'status': const.Returned,
+        'status': const.DEVICE_RETURNED,
     }
     if not utils.update_by_data(res_device[1], update_info, False)[0]:
-        return reply(success=False, message='设备状态修改失败', error_code=const.unknown_err)
+        return reply(success=False, message='设备状态修改失败', error_code=const.UNKNOWN_ERR)
 
     device_return_data = {
-        'status': const.Returned,
+        'status': const.DEVICE_RETURNED,
         'returner_member_code': form['returner_member_code'],
         'returner_department_id': member.department_id,
         'real_return_date': form['return_date'],
@@ -96,7 +96,7 @@ def return_device():
     res = utils.update_by_data(device_rented, device_return_data, True)
 
     return reply(success=res[0], message=res[1], error_code=res[2])
-    # return reply(success=True)
+    # return reply(CODE_SUCCESS=True)
 
 
 @login_required_api
@@ -104,7 +104,7 @@ def return_device():
 def delete_device_rent():
     valid, form = parsing_form('deleteByIdForm')
     if not valid:
-        return reply(success=False, message='参数错误', error_code=const.param_err)
+        return reply(success=False, message='参数错误', error_code=const.PARAM_ERR)
     res = utils.delete_by_id(DeviceRent, form['id'])
     return reply(success=res[0], message=res[1], error_code=res[2])
 
@@ -156,7 +156,7 @@ def transform(device_rent):
                 )
     device = Device.query.filter_by(
         code=device_rent.device_code,
-        record_status=const.Normal
+        record_status=const.RECORD_NORMAL
     ).first()
     item['device_id'] = device.id
     item['device_name'] = device.name
@@ -169,33 +169,33 @@ def transform(device_rent):
 
     manufacturer = Manufacturer.query.filter_by(
         id=device.manufacturer_id,
-        record_status=const.Normal
+        record_status=const.RECORD_NORMAL
     ).first()
     item['manufacturer'] = manufacturer.name
 
     device_department = Department.query.filter_by(
         id=device.department_id,
-        record_status=const.Normal
+        record_status=const.RECORD_NORMAL
     ).first()
     item['department_code'] = device_department.code
     item['department_name'] = device_department.name
 
     borrower = Member.query.filter_by(
         code=device_rent.borrower_member_code,
-        record_status=const.Normal
+        record_status=const.RECORD_NORMAL
     ).first()
     item['borrower_id'] = borrower.id
     item['borrower_name'] = borrower.name
 
     borrower_department = Department.query.filter_by(
         id=borrower.department_id,
-        record_status=const.Normal
+        record_status=const.RECORD_NORMAL
     ).first()
     item['borrower_department_code'] = borrower_department.code
     item['borrower_department_name'] = borrower_department.name
     returner = Member.query.filter_by(
         code=device_rent.returner_member_code,
-        record_status=const.Normal
+        record_status=const.RECORD_NORMAL
     ).first()
     item['returner_id'] = returner.id
     item['returner_name'] = returner.name
@@ -210,7 +210,7 @@ def query_rent_device():
     page_size = page_info[1]
     valid, form = parsing_form('queryDeviceLendForm')
     if not valid:
-        return reply(success=False, message='参数错误', error_code=const.param_err)
+        return reply(success=False, message='参数错误', error_code=const.PARAM_ERR)
     rent_query = dict()
     if form['device_code']:
         rent_query['device_code'] = form['device_code']
@@ -265,9 +265,11 @@ def query_rent_device():
     device_rents = device_rents.paginate(current_page, page_size, False).items
     data = map(lambda x: transform(x), device_rents)
     data = list(data)
-    return reply(success=True,
-                 data={
-                     'items': data,
-                     'total_count': total_count,
-                 },
-                 message='done', error_code=const.success)
+    return query_reply(success=True,
+                       data=data,
+                       paging={
+                           'current': current_page,
+                           'pages': int(total_count / page_size + 1),
+                           'records': total_count,
+                       },
+                       message='done', error_code=const.CODE_SUCCESS)

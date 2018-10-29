@@ -24,9 +24,9 @@ def ensure_session_removed(func):
 def db_commit():
     try:
         db.session.commit()
-        return True, '', const.success
+        return True, '操作成功', const.CODE_SUCCESS
     except:
-        return False, '数据库操作失败', const.db_err
+        return False, '数据库操作失败', const.DB_ERR
 
 
 class MySQLMixin(object):
@@ -41,7 +41,7 @@ class User(db.Model, MySQLMixin, UserMixin):
     name = db.Column(VARCHAR(255), nullable=False)
     username = db.Column(VARCHAR(255), nullable=False)
     password = db.Column(VARCHAR(255), nullable=False)
-    record_status = db.Column(TINYINT(unsigned=True), default=0)  # 0---success 1---delete
+    record_status = db.Column(TINYINT(unsigned=True), default=0)  # 0---CODE_SUCCESS 1---delete
     create_time = db.Column(DATETIME, default=datetime.now)
     update_time = db.Column(DATETIME, default=datetime.now)
 
@@ -72,7 +72,7 @@ class Device(db.Model, MySQLMixin):
 class Manufacturer(db.Model, MySQLMixin):
     id = db.Column(BIGINT(unsigned=True), autoincrement=True, primary_key=True)
     name = db.Column(VARCHAR(255), nullable=False)
-    record_status = db.Column(TINYINT(unsigned=True), default=0)  # 0---success 1---delete
+    record_status = db.Column(TINYINT(unsigned=True), default=0)  # 0---CODE_SUCCESS 1---delete
     create_time = db.Column(DATETIME, default=datetime.now)
     update_time = db.Column(DATETIME, default=datetime.now)
 

@@ -10,15 +10,15 @@ import logging
 def login():
     valid, form = parsing_form('loginForm')
     if not valid:
-        return reply(success=False, message='参数缺失', error_code=const.param_err)
+        return reply(success=False, message='参数缺失', error_code=const.PARAM_ERR)
     user = User.query.filter_by(
         username=form['username'],
-        record_status=const.Normal
+        record_status=const.RECORD_NORMAL
     ).first()
     if not user:
-        return reply(success=False, message='用户不存在', error_code=const.login_err)
+        return reply(success=False, message='用户不存在', error_code=const.LOGIN_ERR)
     if user.password != form['password']:
-        return reply(success=False, message='密码错误', error_code=const.login_err)
+        return reply(success=False, message='密码错误', error_code=const.LOGIN_ERR)
 
     auth.login(user)
     return reply(success=True)

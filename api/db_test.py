@@ -14,5 +14,5 @@ def db_add():
     db.session.add(user_info)
     db.session.commit()
     return dict(
-        success='success'
+        success='CODE_SUCCESS'
     )

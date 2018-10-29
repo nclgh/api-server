@@ -1,19 +1,19 @@
 # device status
-Returned = 0
-Rented = 1
+DEVICE_RETURNED = 0
+DEVICE_RENTED = 1
 
 # record status
-Normal = 0
-Deleted = 1
+RECORD_NORMAL = 0
+RECORD_DELETED = 1
 
 # parmal status code
-success = 0
-param_err = 1
-param_illegal = 2
-db_err = 3
-unknown_err = 4
-login_err = 5
+CODE_SUCCESS = 0
+PARAM_ERR = 1
+PARAM_ILLEGAL = 2
+DB_ERR = 3
+UNKNOWN_ERR = 4
+LOGIN_ERR = 5
 
 # page
-current_page_default = 1
-page_size_default = 10
+CURRENT_PAGE_DEFAULT = 1
+PAGE_SIZE_DEFAULT = 10

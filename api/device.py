@@ -1,6 +1,6 @@
 from common.views import login_required_api
 from common import const, utils
-from common.response import reply
+from common.response import *
 from models import *
 from api.form import parsing_form
 from flask import request
@@ -12,16 +12,16 @@ from pydash import pick, assign
 def add_device():
     valid, form = parsing_form('addDeviceForm')
     if not valid:
-        return reply(success=False, message='参数错误', error_code=const.param_err)
+        return reply(success=False, message='参数错误', error_code=const.PARAM_ERR)
 
     if utils.is_code_exist(Device, form['code'])[0]:
-        return reply(success=False, message='该设备编码已存在', error_code=const.param_illegal)
+        return reply(success=False, message='该设备编码已存在', error_code=const.PARAM_ILLEGAL)
 
     if not utils.is_id_exist(Department, form['department_id'])[0]:
-        return reply(success=False, message='该部门不存在', error_code=const.param_illegal)
+        return reply(success=False, message='该部门不存在', error_code=const.PARAM_ILLEGAL)
 
     if not utils.is_id_exist(Manufacturer, form['manufacturer_id'])[0]:
-        return reply(success=False, message='该生产厂家不存在', error_code=const.param_illegal)
+        return reply(success=False, message='该生产厂家不存在', error_code=const.PARAM_ILLEGAL)
 
     device_data = {
         'code': form['code'],
@@ -30,11 +30,11 @@ def add_device():
         'brand': form['brand'],
         'tag_code': form['tag_code'],
         'description': form['description'],
-        'status': const.Returned,
+        'status': const.DEVICE_RETURNED,
         'manufacturer_date': form['manufacturer_date'],
         'manufacturer_id': form['manufacturer_id'],
         'department_id': form['department_id'],
-        'record_status': const.Normal,
+        'record_status': const.RECORD_NORMAL,
     }
     res = utils.add_by_data(Device, device_data)
     return reply(success=res[0], message=res[1], error_code=res[2])
@@ -45,7 +45,7 @@ def add_device():
 def delete_device():
     valid, form = parsing_form('deleteByIdForm')
     if not valid:
-        return reply(success=False, message='参数错误', error_code=const.param_err)
+        return reply(success=False, message='参数错误', error_code=const.PARAM_ERR)
 
     res = utils.delete_by_id(Device, form['id'])
     return reply(success=res[0], message=res[1], error_code=res[2])
@@ -71,13 +71,13 @@ def transform(device):
 
     manufacturer = Manufacturer.query.filter_by(
         id=device.manufacturer_id,
-        record_status=const.Normal
+        record_status=const.RECORD_NORMAL
     ).first()
     item['manufacturer_name'] = manufacturer.name
 
     department = Department.query.filter_by(
         id=device.department_id,
-        record_status=const.Normal
+        record_status=const.RECORD_NORMAL
     ).first()
     item['department_code'] = department.code
     item['department_name'] = department.name
@@ -92,7 +92,7 @@ def query_device():
     page_size = page_info[1]
     valid, form = parsing_form('queryDeviceForm')
     if not valid:
-        return reply(success=False, message='参数错误', error_code=const.param_err)
+        return reply(success=False, message='参数错误', error_code=const.PARAM_ERR)
     device_query = dict()
     if form['code']:
         device_query['code'] = form['code']
@@ -124,12 +124,14 @@ def query_device():
     devices = devices.paginate(current_page, page_size, False).items
     data = map(lambda x: transform(x), devices)
     data = list(data)
-    return reply(success=True,
-                 data={
-                     'items': data,
-                     'total_count': total_count,
-                 },
-                 message='done', error_code=const.success)
+    return query_reply(success=True,
+                       data=data,
+                       paging={
+                           'current': current_page,
+                           'pages': int(total_count / page_size + 1),
+                           'records': total_count,
+                       },
+                       message='done', error_code=const.CODE_SUCCESS)
 
 
 @login_required_api
@@ -137,14 +139,14 @@ def query_device():
 def query_device_description_by_id():
     device_id = request.args.get('id')
     if not device_id:
-        return reply(success=False, message='参数错误', error_code=const.param_err)
+        return reply(success=False, message='参数错误', error_code=const.PARAM_ERR)
     device = Device.query.filter_by(
         id=device_id
     ).first()
     if not device:
-        return reply(success=False, message='该设备不存在', error_code=const.param_illegal)
+        return reply(success=False, message='该设备不存在', error_code=const.PARAM_ILLEGAL)
     return reply(success=True,
                  data={
                      'description': device.description,
                  },
-                 message='done', error_code=const.success)
+                 message='done', error_code=const.CODE_SUCCESS)
