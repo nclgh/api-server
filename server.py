@@ -53,7 +53,9 @@ def init():
     # device
     app.add_url_rule('/device/document/add/', 'device_add', view_func=api.add_device, methods=['POST'])
     app.add_url_rule('/device/document/delete/', 'device_delete', view_func=api.delete_device, methods=['POST'])
-    app.add_url_rule('/device/query/', 'device_query', view_func=api.query_device, methods=['POST'])
+    app.add_url_rule('/device/document/query/', 'device_query', view_func=api.query_device, methods=['POST'])
+    app.add_url_rule('/device/document/querywithdescription/', 'device_query_withdescription',
+                     view_func=api.query_device_with_description, methods=['POST'])
     app.add_url_rule('/device/document/description/', 'device_query_description',
                      view_func=api.query_device_description_by_id,
                      methods=['GET'])
@@ -63,6 +65,9 @@ def init():
     app.add_url_rule('/device/achievement/delete/', 'achievement_delete', view_func=api.delete_achievement,
                      methods=['POST'])
     app.add_url_rule('/device/achievement/query/', 'achievement_query', view_func=api.query_achievement,
+                     methods=['POST'])
+    app.add_url_rule('/device/achievement/querywithdescription/', 'achievement_query_with_description',
+                     view_func=api.query_achievement_with_description,
                      methods=['POST'])
     app.add_url_rule('/device/achievement/description/', 'achievement_query_description',
                      view_func=api.query_achievement_description_by_id,

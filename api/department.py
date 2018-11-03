@@ -38,7 +38,6 @@ def delete_department():
 
 @login_required_api
 def query_department():
-    logging.warning('111')
     departments = Department.query.order_by(
         Department.name
     ).filter_by(

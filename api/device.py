@@ -55,7 +55,7 @@ def delete_device():
 # department_code
 # department_name
 
-def transform(device):
+def transform(device, with_description=False):
     item = pick(device,
                 'id',
                 'code',
@@ -68,7 +68,8 @@ def transform(device):
                 'manufacturer_date',
                 'department_id',
                 )
-
+    if with_description:
+        item['description'] = device.description
     manufacturer = Manufacturer.query.filter_by(
         id=device.manufacturer_id,
         record_status=const.RECORD_NORMAL
@@ -150,3 +151,53 @@ def query_device_description_by_id():
                      'description': device.description,
                  },
                  message='done', error_code=const.CODE_SUCCESS)
+
+
+@login_required_api
+@ensure_session_removed
+def query_device_with_description():
+    page_info = utils.get_page_info(request)
+    current_page = page_info[0]
+    page_size = page_info[1]
+    valid, form = parsing_form('queryDeviceForm')
+    if not valid:
+        return reply(success=False, message='参数错误', error_code=const.PARAM_ERR)
+    device_query = dict()
+    if form['code']:
+        device_query['code'] = form['code']
+    if form['name']:
+        device_query['name'] = form['name']
+    if form['model']:
+        device_query['model'] = form['model']
+    if form['brand']:
+        device_query['brand'] = form['brand']
+    if form['tag_code']:
+        device_query['tag_code'] = form['tag_code']
+    if form['status']:
+        device_query['status'] = form['status']
+    if form['manufacturer_id']:
+        device_query['manufacturer_id'] = form['manufacturer_id']
+    if form['department_id']:
+        device_query['department_id'] = form['department_id']
+
+    devices = Device.query.filter_by()
+    if device_query:
+        devices = devices.filter_by(
+            **device_query
+        )
+    if form['manufacturer_date']:
+        devices = devices.filter(
+            db.cast(Device.manufacturer_date, db.DATE) == form['manufacturer_date'])
+
+    total_count = devices.count()
+    devices = devices.paginate(current_page, page_size, False).items
+    data = map(lambda x: transform(x, True), devices)
+    data = list(data)
+    return query_reply(success=True,
+                       data=data,
+                       paging={
+                           'current': current_page,
+                           'pages': int(total_count / page_size + 1),
+                           'records': total_count,
+                       },
+                       message='done', error_code=const.CODE_SUCCESS)
