@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from flask import Flask, jsonify, make_response
+from flask import Flask, jsonify, make_response, request
 from flask._compat import string_types
 from flask.app import setupmethod
 from flask.helpers import _endpoint_from_view_func
@@ -30,7 +30,14 @@ class ServerFlask(Flask):
             if 'message' not in rv:
                 rv['message'] = 'ok'
             rv = jsonify(rv)
-        return super().make_response(rv)
+        res = super().make_response(rv)
+
+        res.headers['Access-Control-Allow-Credentials'] = 'true'
+        res.headers['Access-Control-Allow-Origin'] = request.environ['HTTP_ORIGIN']
+        # res.headers['Access-Control-Allow-Origin'] = '*'
+        # res.headers['Access-Control-Allow-Methods'] = 'POST，GET,OPTIONS'
+        res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'
+        return res
 
     @setupmethod
     def add_url_rule(self, rule, endpoint=None, view_func=None, **options):
