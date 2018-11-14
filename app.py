@@ -33,7 +33,12 @@ class ServerFlask(Flask):
         res = super().make_response(rv)
 
         res.headers['Access-Control-Allow-Credentials'] = 'true'
-        res.headers['Access-Control-Allow-Origin'] = request.environ['HTTP_ORIGIN']
+        origin = ''
+        try:
+            origin = request.environ['HTTP_ORIGIN']
+        except:
+            origin = '*'
+        res.headers['Access-Control-Allow-Origin'] = origin
         # res.headers['Access-Control-Allow-Origin'] = '*'
         # res.headers['Access-Control-Allow-Methods'] = 'POST，GET,OPTIONS'
         res.headers['Access-Control-Allow-Headers'] = 'x-requested-with,content-type'

@@ -74,8 +74,8 @@ def init():
                      methods=['GET'])
 
     # manufacturer
-    app.add_url_rule('/device/manufacturer/add/', 'manufacturer_add', view_func=api.add_manufacturer, methods=['POST'])
-    app.add_url_rule('/device/manufacturer/delete/', 'manufacturer_delete', view_func=api.delete_manufacturer,
+    app.add_url_rule('/manufacturer/add/', 'manufacturer_add', view_func=api.add_manufacturer, methods=['POST'])
+    app.add_url_rule('/manufacturer/delete/', 'manufacturer_delete', view_func=api.delete_manufacturer,
                      methods=['POST'])
     app.add_url_rule('/manufacturer/query/', 'manufacturer_query', view_func=api.query_manufacturer, methods=['GET'])
 

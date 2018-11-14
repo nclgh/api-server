@@ -114,6 +114,7 @@ def query_device():
 
     devices = Device.query.filter_by()
     if device_query:
+        device_query['record_status'] = const.RECORD_NORMAL
         devices = devices.filter_by(
             **device_query
         )
